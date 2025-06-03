@@ -1,5 +1,5 @@
 exercise_library = {
-    "perte": {
+    "loss": {
         "beginner": {
             "no_equipment": [
                 "20 min brisk walk",
