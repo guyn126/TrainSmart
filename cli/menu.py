@@ -11,17 +11,34 @@ Session = sessionmaker(bind=engine)
 
 def create_user_profile():
     session = Session()
-    print("\n Create a new client profile")
+    print("\n🣍 Create a new client profile")
 
     name = input("Name: ")
     age = int(input("Age: "))
     weight = int(input("Weight (kg): "))
     height = int(input("Height (cm): "))
+
+    valid_levels = ["beginner", "intermediate", "advanced"]
     level = input("Level (beginner / intermediate / advanced): ").lower()
+    while level not in valid_levels:
+        level = input(" Invalid level. Choose: beginner / intermediate / advanced: ").lower()
+
+    valid_goals = ["loss", "gain", "cardio"]
     goal = input("Goal (loss / gain / cardio): ").lower()
+    while goal not in valid_goals:
+        goal = input(" Invalid goal. Choose: loss / gain / cardio: ").lower()
+
     days = input("Available training days (e.g. monday,wednesday,friday): ").lower()
-    equipment = input("Available equipment (e.g. dumbbells,mat / none): ").lower()
+
+    valid_equipment = ["no_equipment", "dumbbells"]
+    equipment = input("Available equipment (no_equipment / dumbbells): ").lower()
+    while equipment not in valid_equipment:
+        equipment = input(" Invalid equipment. Choose: no_equipment / dumbbells: ").lower()
+
+    valid_activity = ["low", "moderate", "high"]
     activity = input("Activity level (low / moderate / high): ").lower()
+    while activity not in valid_activity:
+        activity = input(" Invalid activity level. Choose: low / moderate / high: ").lower()
 
     profile = UserProfile(
         name=name,
@@ -42,15 +59,41 @@ def create_user_profile():
 def view_workout_plan():
     session = Session()
     user_id = int(input("Enter client ID: "))
-    plans = session.query(WorkoutPlan).filter_by(user_id=user_id).all()
+    plans = session.query(WorkoutPlan).filter_by(user_id=user_id).order_by(WorkoutPlan.day).all()
 
     if not plans:
-        print("No workout plan found. Create one first.")
+        print(" No workout plan found. Create one first.")
         return
 
-    print(f"\n Weekly Plan for Client {user_id}:")
+    print(f"\n Weekly Plan for Client {user_id}:\n")
+
     for plan in plans:
-        print(f"{plan.day:<10} | {plan.workout_description}")
+        print(f"{plan.day.capitalize():<10} | {plan.workout_description}")
+
+def mark_workout_as_done():
+    session = Session()
+    user_id = int(input("Enter client ID: "))
+    workouts = session.query(WorkoutPlan).filter_by(user_id=user_id).all()
+
+    if not workouts:
+        print(" This client has no workout plan yet.")
+        return
+
+    available_days = {w.day.strip().lower(): w.day.strip() for w in workouts}
+
+    print(f"\n Available days for Client {user_id}: {', '.join(available_days.values())}")
+
+    day_input = input("Enter the day(s) to mark as done (e.g. monday or monday,friday): ").lower()
+    entered_days = [d.strip() for d in day_input.split(",")]
+
+    for d in entered_days:
+        if d not in available_days:
+            print(f" '{d}' is not in the plan. Please try again.")
+            continue
+
+        real_day = available_days[d]
+        mark_workout_done(user_id, real_day)
+        print(f" {real_day} marked as done for client {user_id}.")
 
 def list_all_clients():
     session = Session()
@@ -63,6 +106,28 @@ def list_all_clients():
         for user in users:
             print(f"ID: {user.id} | {user.name} | Goal: {user.goal} | Level: {user.level}")
 
+def export_plan_to_txt():
+    import os
+    session = Session()
+    user_id = int(input("Enter client ID: "))
+    user = session.query(UserProfile).filter_by(id=user_id).first()
+    plans = session.query(WorkoutPlan).filter_by(user_id=user_id).order_by(WorkoutPlan.day).all()
+
+    if not user or not plans:
+        print(" Cannot export: client or plan not found.")
+        return
+
+    if not os.path.exists("plans"):
+        os.makedirs("plans")
+
+    filename = f"plans/user_{user_id}_plan.txt"
+    with open(filename, "w") as file:
+        file.write(f" Weekly Plan for {user.name} (Client ID {user.id})\n")
+        for plan in plans:
+            file.write(f"{plan.day:<10} | {plan.workout_description}\n")
+
+    print(f"✅ Plan exported to {filename}")
+
 def main_menu():
     while True:
         print("\n=== TrainSmart CLI (Coach Mode) ===")
@@ -74,6 +139,7 @@ def main_menu():
         print("6. View Client Daily Nutrition Recommendations")
         print("7. Exit")
         print("8. List All Clients")
+        print("9. Export Client Workout Plan (.txt)")
 
         choice = input("Select an option: ")
 
@@ -85,9 +151,7 @@ def main_menu():
         elif choice == '3':
             view_workout_plan()
         elif choice == '4':
-            user_id = int(input("Enter client ID: "))
-            day = input("Enter the day to mark as done (e.g. monday): ")
-            mark_workout_done(user_id, day)
+            mark_workout_as_done()
         elif choice == '5':
             user_id = int(input("Enter client ID: "))
             view_weekly_progress(user_id)
@@ -104,6 +168,8 @@ def main_menu():
             sys.exit()
         elif choice == '8':
             list_all_clients()
+        elif choice == '9':
+            export_plan_to_txt()
         else:
             print(" Invalid option. Please try again.")
 
