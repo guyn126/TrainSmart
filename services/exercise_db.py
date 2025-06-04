@@ -69,14 +69,14 @@ exercise_library = {
                 "Push-pull legs routine",
                 "Dumbbell Romanian deadlifts",
                 "Arnold press",
-                "Barbell rows (if available)"
+                "Goblet squat "
             ]
         },
         "advanced": {
             "no_equipment": [
                 "Pistol squats",
                 "Explosive push-ups",
-                "Burpee pull-ups (if bar available)",
+                "Burpee pull-ups ",
                 "One-leg bridges and slow dips"
             ],
             "dumbbells": [

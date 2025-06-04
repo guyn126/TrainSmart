@@ -22,8 +22,8 @@ def generate_workout_plan(user_id):
 
     goal = user.goal
     level = user.level
-    available_days = user.available_days.lower().split(",")
-    equipment_list = user.equipment.lower().split(",")
+    available_days = [d.strip().capitalize() for d in user.available_days.split(",")]
+    equipment_list = [e.strip().lower() for e in user.equipment.split(",")]
 
     plan = []
 
@@ -44,7 +44,7 @@ def generate_workout_plan(user_id):
         plan.append(
             WorkoutPlan(
                 user_id=user.id,
-                day=day.strip().capitalize(),
+                day=day,  # Already capitalized
                 workout_description=workout_description
             )
         )

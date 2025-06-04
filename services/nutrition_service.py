@@ -17,7 +17,7 @@ def calculate_nutrition_goals(profile):
     tdee = bmr * activity_factors.get(activity, 1.55)
 
     # Adjust for goal
-    if goal == "perte":
+    if goal == "loss":
         tdee -= 500
     elif goal == "gain":
         tdee += 300

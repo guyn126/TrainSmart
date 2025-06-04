@@ -28,7 +28,7 @@ def create_user_profile():
     while goal not in valid_goals:
         goal = input(" Invalid goal. Choose: loss / gain / cardio: ").lower()
 
-    days = input("Available training days (e.g. monday,wednesday,friday): ").lower()
+    days = input("Available training days:").lower()
 
     valid_equipment = ["no_equipment", "dumbbells"]
     equipment = input("Available equipment (no_equipment / dumbbells): ").lower()
@@ -79,21 +79,24 @@ def mark_workout_as_done():
         print(" This client has no workout plan yet.")
         return
 
-    available_days = {w.day.strip().lower(): w.day.strip() for w in workouts}
+    available_days_map = {w.day.strip().lower(): w.day.strip() for w in workouts}
+    print(f"\n Available days for Client {user_id}: {', '.join(available_days_map.values())}")
 
-    print(f"\n Available days for Client {user_id}: {', '.join(available_days.values())}")
+    day_input = input("Enter the day(s) to mark as done (e.g. monday or wednesday,friday): ").lower().replace(" ", "")
+    day_list = day_input.split(",")
 
-    day_input = input("Enter the day(s) to mark as done (e.g. monday or monday,friday): ").lower()
-    entered_days = [d.strip() for d in day_input.split(",")]
+    matched = False
+    for day in day_list:
+        if day in available_days_map:
+            real_day = available_days_map[day]
+            mark_workout_done(user_id, real_day)
+            print(f" {real_day} marked as done.")
+            matched = True
+        else:
+            print(f" '{day}' is not in the plan. Please try again.")
 
-    for d in entered_days:
-        if d not in available_days:
-            print(f" '{d}' is not in the plan. Please try again.")
-            continue
-
-        real_day = available_days[d]
-        mark_workout_done(user_id, real_day)
-        print(f" {real_day} marked as done for client {user_id}.")
+    if not matched:
+        print(" No valid day was marked.")
 
 def list_all_clients():
     session = Session()
@@ -126,7 +129,7 @@ def export_plan_to_txt():
         for plan in plans:
             file.write(f"{plan.day:<10} | {plan.workout_description}\n")
 
-    print(f"✅ Plan exported to {filename}")
+    print(f" Plan exported to {filename}")
 
 def main_menu():
     while True:

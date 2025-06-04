@@ -23,10 +23,10 @@ sample_user = UserProfile(
     age=30,
     weight=75,
     height=175,
-    level="intermediate",
+    level="beginner",
     goal="loss",
     available_days="monday,wednesday,friday",
-    equipment="dumbbells,mat",
+    equipment="cardio",
     activity="moderate"
 )
 
